@@ -36,7 +36,7 @@ pub fn update_game_camera(
         let half_height = 0.5;
         let bottom_limit = bottom + half_height;
         let top_limit = top - half_height;
-        let y = player_transform.translation.y.max(bottom_limit).min(top_limit);
+        let mut y = player_transform.translation.y.max(bottom_limit).min(top_limit);
         //let y = player_transform.translation.y;
 
         // 判断相机是否超出左右边界
@@ -45,7 +45,18 @@ pub fn update_game_camera(
         //let left_limit = left + half_width;
         //let right_limit = right - half_width;
         //let x = player_transform.translation.x.max(left_limit).min(right_limit);    
-        let x = player_transform.translation.x;
+        let mut x = player_transform.translation.x;
+
+        //println!("{}", y);
+        //println!("{}", x);
+        /*
+        if x < 164.2 {
+            x = 164.2;
+        }
+        if y < 107.9 {
+            y = 107.9;
+        }
+        */
 
         game_camera_transform.translation = Vec3::new(
             x,

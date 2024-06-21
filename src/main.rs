@@ -5,6 +5,7 @@ mod plugins;
 use plugins::{
     atlas::AtlasPlugin, game::GamePlugin
 };
+use bevy_egui::{egui, EguiContext, EguiContexts, EguiPlugin};
 
 mod states;
 use states::AppState;
@@ -12,6 +13,7 @@ use states::AppState;
 mod assets;
 use assets::GameAssets;
 
+mod style;
 
 fn main() {
     let mut app = App::new();
@@ -26,7 +28,7 @@ fn main() {
                 primary_window: Some(Window {
                     #[cfg(target_os = "windows")]
                     position: WindowPosition::Centered(MonitorSelection::Primary), //窗口居中
-                    resolution: WindowResolution::new(1200.0, 800.0),
+                    resolution: WindowResolution::new(1000.0, 700.0),
                     ..default()
                 }),
                 ..default()
@@ -40,7 +42,17 @@ fn main() {
     .add_collection_to_loading_state::<_, GameAssets>(AppState::LoadingAssets)
     .add_plugins(AtlasPlugin)
     .add_plugins(GamePlugin)
-    .insert_resource(ClearColor(Color::GRAY));
+    .insert_resource(ClearColor(Color::GRAY))
+    .add_systems(Startup, initcreate);
 
     app.run();
+}
+
+
+fn initcreate(
+    mut contexts: EguiContexts
+){
+
+    let ctx = contexts.ctx_mut();
+    style::set_style(ctx, style::Theme::light());
 }

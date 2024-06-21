@@ -1,12 +1,15 @@
+use std::os::windows;
+
+use bevy::render::camera;
 // Copyright (c) 2023 Paul
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 use bevy::{
-    prelude::*,
-    time::Time, sprite::SpriteBundle,
+    input::mouse, prelude::*, sprite::SpriteBundle, time::Time
 };
-
+use bevy::prelude::*;
+use crate::plugins::camera::components::GameCamera;
 use crate::plugins::{
     player::{
         components::{
@@ -21,14 +24,19 @@ use crate::plugins::{
 pub fn player_movement_input(
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
-    mut query: Query<(&mut PlayerState, &mut PlayerDirection,&Transform), With<Player>>,
+    mouse:Res<Input<MouseButton>>,
+    game_camera_query: Query<(&Camera, &GlobalTransform), With<GameCamera>>,
+    mut windows: Query<&mut Window>,
+    mut query: Query<(&mut PlayerState, &mut PlayerDirection,&mut Transform), With<Player>>,
+    
 ) {
+ 
     if query.is_empty() {
         println!("cc1");
         return;
     }
 
-    let (mut player_state, mut player_direction,trans) = query
+    let (mut player_state, mut player_direction,mut trans) = query
         .get_single_mut()
         .expect("0 or more than 1 `Player` found.");
 
@@ -53,10 +61,49 @@ pub fn player_movement_input(
     } else if keyboard.pressed(KeyCode::Right) {
     
          new_player_direction = PlayerDirection::Right;
+    } else if keyboard.pressed(KeyCode::Down) {
+    
+        new_player_direction = PlayerDirection::Down;
+    }else if keyboard.pressed(KeyCode::Up) {
+    
+        new_player_direction = PlayerDirection::Up;
     }
+
     if new_player_direction != *player_direction {
         *player_direction = new_player_direction;
     }
+
+
+    if mouse.just_pressed(MouseButton::Left) {
+        let mut window = windows.single_mut();
+        let (camera, camera_transform) = game_camera_query.single();
+        if let Some(position) = window.cursor_position() {
+            println!("鼠标点击点的坐标：(x={}, y={})", position.x, position.y);
+           
+            //trans.translation.y = position.x; //214 反 50
+            //trans.translation.x = position.y //212 正
+            // Calculate a world position based on the cursor's position.
+            let Some(point) = camera.viewport_to_world_2d(camera_transform, position) else {
+                return;
+            };
+            println!("世界坐标：(x={}, y={})", point.x, point.y);
+            trans.translation.y = point.y; //214 反 50
+            trans.translation.x = point.x; //212 正
+
+        }
+        commands.spawn(SpriteBundle {
+            sprite: Sprite {
+                color: Color::RED,
+                custom_size: Some(Vec2::new(10.0, 10.0)),
+                ..default()
+            },
+            transform: Transform::from_translation(Vec3::new(200., 200., 10.)),
+            ..default()
+        })
+        .insert(Name::from("Collider")); 
+
+    }
+    
 }
 
 pub fn player_movement(
@@ -144,6 +191,7 @@ pub fn player_movement(
                     .is_empty()
                 {
                     player_velocity.0.x = 0.0;
+
                 }
 
                 if !tilemap_collider_rect
@@ -159,6 +207,13 @@ pub fn player_movement(
         // Moving the player.
         //player_velocity.0.y = 0.;
         player_transform.translation += player_velocity.0.extend(0.0) * delta.delta_seconds();
+        //player_transform.translation.y = 168.0; //214 反 50
+        //player_transform.translation.x = 162.0; //212 正
+        //player_transform.translation.y = 212.0; //214 反 50
+        //player_transform.translation.x = 118.0; //214 正 50
+        println!("{}",player_transform.translation.x);
+        println!("{}",player_transform.translation.y);
+    
     }
 }
 

@@ -8,6 +8,9 @@ use bevy::{
 };
 
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Tilecollider;
+
+#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Tilemap;
 
 #[derive(Component, Default, Debug, Clone)]
